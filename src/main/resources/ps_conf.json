@@ -1,0 +1,18 @@
+{ "PumpStations":[
+  {"stationName":"LZL”,
+   “kwareurl”: “http://10.252.138.160:39320/iotgateway”,
+   “ifxhost”:””,
+   “ifxport”:””,
+   “ifxprotocal”,””
+   “ifx_username”:””,
+   “ifx_password”:””,
+   “ifx_db”:”” 
+  },
+  {"stationName”:”f”,
+   “kwareurl”: “http://10.252.138.160:39320/iotgateway”,
+   “ifxurl”:””,
+   “ifx_username”:””,
+   “ifx_password”:”” 
+  }
+]
+}
