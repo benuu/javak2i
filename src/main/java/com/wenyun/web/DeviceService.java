@@ -1,6 +1,7 @@
 package com.wenyun.web;
 
 import java.io.FileNotFoundException;
+import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -30,35 +31,46 @@ public class DeviceService {
 	}
 	
 	@GET
-	@Path("/{dsname}")
-	public Response getDeviceByName(@PathParam("dsname") String dsname) {
+	@Path("/{psname}/{dsname}")
+	public Response getDeviceByName(@PathParam("psname") String psname,@PathParam("dsname") String dsname) {
 		JSONParser jParser = new JSONParser();
 		String jsonText ="{}";
 		try {
-			InputStream pscfgStream = this.getClass().getClassLoader().getResourceAsStream("/ds_conf.json");
-			Object obj = jParser.parse( new InputStreamReader(pscfgStream));
-
+			InputStream pscfgStream = this.getClass().getClassLoader().getResourceAsStream("/wenyun.json");
+			Object confobj = jParser.parse( new InputStreamReader(pscfgStream));
+            JSONObject confjsonObject =  (JSONObject) confobj;
+            String pumpJsonLoc = (String)confjsonObject.get("conf_loc") +"/ps_conf.json";
+            Object obj = jParser.parse( new FileReader(pumpJsonLoc));
             JSONObject jsonObject =  (JSONObject) obj;
-            JSONArray existdevices = (JSONArray) jsonObject.get("Devices");
-            for (int i=0; i < existdevices.size();i++)
+            JSONArray existstations = (JSONArray) jsonObject.get("PumpStations");
+            for (int i=0; i < existstations.size();i++)
             {
-            	JSONObject tempObject = (JSONObject) existdevices.get(i);
-            	String tempPumpName = (String)tempObject.get("deviceName");
-                if (tempPumpName.compareTo(dsname)==0)
+            	JSONObject tempObject = (JSONObject) existstations.get(i);
+            	String tempPumpName = (String)tempObject.get("stationName");
+                if (tempPumpName.compareTo(psname)==0)
                 {
-                	
-                    StringWriter out = new StringWriter(); 
-                    tempObject.writeJSONString(out); 
-                    jsonText = out.toString(); 
-                    return Response.status(200).entity(jsonText).build();
+                	JSONArray existdevices = (JSONArray) tempObject.get("Devices");
+                	for (int j=0; j < existdevices.size();j++)
+                    {
+                		JSONObject tempDevObject = (JSONObject) existdevices.get(j);
+                    	String tempDeviceName = (String)tempDevObject.get("deviceName");
+                    	if (tempDeviceName.compareTo(dsname)==0)
+                        {
+                    		StringWriter out = new StringWriter(); 
+                            tempDevObject.writeJSONString(out); 
+                            jsonText = out.toString(); 
+                            return Response.status(200).entity(jsonText).build();	
+                        }
+                    	
+                    }
                 }
             }
 		}catch (FileNotFoundException e) {
-            e.printStackTrace();
+			return Response.status(500).entity(e.getMessage()).build();
         } catch (IOException e) {
-            e.printStackTrace();
+        	return Response.status(500).entity(e.getMessage()).build();
         } catch (ParseException e) {
-            e.printStackTrace();
+        	return Response.status(500).entity(e.getMessage()).build();
         }
 		return Response.status(200).entity(jsonText).build();
 	}
