@@ -1,0 +1,18 @@
+{ 
+"Devices":[
+  {
+    "deviceName":"pump1",
+    "TYPE": "pump",
+    "id":"1",
+    "status":["run","remote","fault"]
+   
+  },
+  {
+    "deviceName":"pump2",
+    "TYPE": "pump",
+    "id":"1",
+    "status":"run"
+   
+  }
+]
+}

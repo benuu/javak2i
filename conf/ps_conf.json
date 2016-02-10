@@ -1,1 +1,57 @@
-{"PumpStations":[{"ifxurl":"","kwareurl":"http:\/\/10.252.138.160:39320\/iotgateway","ifx_password":"ooo","stationName":"f","ifx_username":"aaa"},{"ifxport":"8099","ifx_db":"aaa","kwareurl":"http:\/\/10.252.138.160:39320\/iotgateway","ifx_password":"test","stationName":"LZL","ifxhost":"1-.66.129.2","ifx_username":"admin","ifxprotocal":"http"}]}
+{
+    "PumpStations": [
+        {
+            "ifxurl": "",
+            "kwareurl": "http://10.252.138.160:39320/iotgateway",
+            "ifx_password": "ooo",
+            "stationName": "f",
+            "ifx_username": "aaa",
+            "Devices": [
+                {
+                    "deviceName": "pump1",
+                    "TYPE": "pump",
+                    "id": "1",
+                    "status": [
+                        "run",
+                        "remote",
+                        "fault"
+                    ]
+                },
+                {
+                    "deviceName": "pump2",
+                    "TYPE": "pump",
+                    "id": "1",
+                    "status": "run"
+                }
+            ]
+        },
+        {
+            "ifxport": "8099",
+            "ifx_db": "aaa",
+            "kwareurl": "http://10.252.138.160:39320/iotgateway",
+            "ifx_password": "test",
+            "stationName": "LZL",
+            "ifxhost": "1-.66.129.2",
+            "ifx_username": "admin",
+            "ifxprotocal": "http",
+            "Devices": [
+                {
+                    "deviceName": "pump1",
+                    "TYPE": "pump",
+                    "id": "1",
+                    "status": [
+                        "run",
+                        "remote",
+                        "fault"
+                    ]
+                },
+                {
+                    "deviceName": "pump2",
+                    "TYPE": "pump",
+                    "id": "1",
+                    "status": "run"
+                }
+            ]
+        }
+    ]
+}
