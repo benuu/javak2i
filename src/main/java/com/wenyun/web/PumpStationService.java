@@ -13,7 +13,9 @@ import java.util.Iterator;
 import java.util.List;
 
 import javax.ws.rs.Consumes;
+import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
+import javax.ws.rs.POST;
 import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
@@ -76,6 +78,45 @@ public class PumpStationService {
 		return Response.status(200).entity(jsonText).build();
 	}
 	
+	@DELETE
+	@Path("/{psname}")
+	public Response psDelete(@PathParam("psname") String psname) {
+ 
+		JSONParser jParser = new JSONParser();
+		String jsonText ="{}";
+		try {
+			InputStream pscfgStream = this.getClass().getClassLoader().getResourceAsStream("/wenyun.json");
+			Object confobj = jParser.parse( new InputStreamReader(pscfgStream));
+            JSONObject confjsonObject =  (JSONObject) confobj;
+            String pumpJsonLoc = (String)confjsonObject.get("conf_loc") +"/ps_conf.json";
+            Object obj = jParser.parse( new FileReader(pumpJsonLoc));
+            JSONObject jsonObject =  (JSONObject) obj;
+            JSONArray existpumps = (JSONArray) jsonObject.get("PumpStations");
+            for (int i=0; i < existpumps.size();i++)
+            {
+            	JSONObject tempObject = (JSONObject) existpumps.get(i);
+            	String tempPumpName = (String)tempObject.get("stationName");
+                if (tempPumpName.compareTo(psname)==0)
+                {
+                	existpumps.remove(i);
+                	break;
+                }
+            }
+            jsonObject.put("PumpStations", existpumps);
+            FileWriter fileout = new FileWriter(pumpJsonLoc);
+            jsonObject.writeJSONString(fileout);
+            fileout.flush();
+            fileout.close();
+            return Response.status(200).entity("Remove pump Station Correct").build();
+		}catch (FileNotFoundException e) {
+			return Response.status(500).entity(e.getMessage()).build();
+        } catch (IOException e) {
+        	return Response.status(500).entity(e.getMessage()).build();
+        } catch (ParseException e) {
+        	return Response.status(500).entity(e.getMessage()).build();
+        }
+	}
+	
 	@PUT
 	@Path("/{psname}")
 	public Response psUpdate(@PathParam("psname") String psname, String payload) {
@@ -92,7 +133,7 @@ public class PumpStationService {
             JSONArray existpumps = (JSONArray) jsonObject.get("PumpStations");
             
             JSONObject payloadjson = (JSONObject) jParser.parse(payload);
-            if (!this.verifyPSPayload(payloadjson))
+            if (!this.verifyPSPUTPayload(payloadjson))
             {
             	return Response.status(500).entity("Input pyload lack of fields!").build();
             }
@@ -134,12 +175,85 @@ public class PumpStationService {
         }
 	}
 	
-	private Boolean verifyPSPayload(JSONObject payloadjson)
+	@POST
+	@Path("/")
+	public Response psUpdate(String payload) {
+ 
+		JSONParser jParser = new JSONParser();
+		String jsonText = "{}";
+		try {
+			InputStream pscfgStream = this.getClass().getClassLoader().getResourceAsStream("/wenyun.json");
+			Object confobj = jParser.parse( new InputStreamReader(pscfgStream));
+            JSONObject confjsonObject =  (JSONObject) confobj;
+            String pumpJsonLoc = (String)confjsonObject.get("conf_loc") +"/ps_conf.json";
+            Object obj = jParser.parse( new FileReader(pumpJsonLoc));
+            JSONObject jsonObject =  (JSONObject) obj;
+            JSONArray existpumps = (JSONArray) jsonObject.get("PumpStations");
+            
+            JSONObject payloadjson = (JSONObject) jParser.parse(payload);
+            if (!this.verifyPSPOSTPayload(payloadjson))
+            {
+            	return Response.status(500).entity("Input pyload lack of fields!").build();
+            }
+            
+            JSONObject tempObject = null;
+            String newPumpName = (String) payloadjson.get("stationName");
+            for (int i=0; i < existpumps.size();i++)
+            {
+            	tempObject = (JSONObject) existpumps.get(i);
+            	String tempPumpName = (String)tempObject.get("stationName");
+            	
+                if (tempPumpName.compareTo(newPumpName)==0)
+                {
+                	               	
+                	return Response.status(500).entity("The pump station already exsit! Please use put instead of POST!").build();
+                }
+               
+            }
+            existpumps.add(payloadjson);
+            jsonObject.put("PumpStations", existpumps);
+            FileWriter fileout = new FileWriter(pumpJsonLoc);
+            jsonObject.writeJSONString(fileout);
+            fileout.flush();
+            fileout.close();
+            return Response.status(200).entity("Pump Station Created!").build();
+		}catch (FileNotFoundException e) {
+			return Response.status(500).entity(e.getMessage()).build();
+        } catch (IOException e) {
+        	return Response.status(500).entity(e.getMessage()).build();
+        } catch (ParseException e) {
+        	return Response.status(500).entity(e.getMessage()).build();
+        }
+	}
+	
+	private Boolean verifyPSPUTPayload(JSONObject payloadjson)
 	{
 		String validKeys[] = {"kwareurl","ifxhost","ifxport","ifxprotocal","ifx_username","ifx_password","ifx_db"};
 
 		List<String> keylist = Arrays.asList(validKeys);  
        		
+		Iterator<String> it = payloadjson.keySet().iterator(); 
+    	while (it.hasNext()) {
+    		String key = it.next();
+    		if (!keylist.contains(key))
+    		{
+    			return false;
+    		}
+    	}
+    	return true;
+	}
+	private Boolean verifyPSPOSTPayload(JSONObject payloadjson)
+	{
+		String validKeys[] = {"stationName","kwareurl","ifxhost","ifxport","ifxprotocal","ifx_username","ifx_password","ifx_db"};
+		List<String> keylist = Arrays.asList(validKeys); 
+		
+		for (int i=0; i<validKeys.length;i++)
+		{
+			if(! payloadjson.containsKey(validKeys[i]))
+			{
+				return false;
+			}
+		}
 		Iterator<String> it = payloadjson.keySet().iterator(); 
     	while (it.hasNext()) {
     		String key = it.next();
